@@ -8,12 +8,31 @@ type
   WritableSpill[T] = object
     stream: Stream
 
+var
+  spillsBaseDir = "/tmp/spills"
+  count = 0
+
+proc genId(): string =
+  count += 1
+  return spillsBaseDir / ("spill_" & $(count))
+
+proc spillDir*(s: string) =
+  createDir(s)
+  spillsBaseDir = s
+
+proc initSpills*() =
+  createDir(spillsBaseDir)
+
 proc spill*[T](path: string): Spill[T] =
   let f = memfiles.open(path, mode = fmReadWrite)
   return Spill[T](data: cast[ptr[UncheckedArray[T]]](f.mem), underlying: f)
 
 proc writableSpill*[T](path: string): WritableSpill[T] =
   WritableSpill[T](stream: newFileStream(path, fmWrite))
+
+proc writableSpill*[T](): (string, WritableSpill[T]) =
+  let path = genId()
+  return (path, writableSpill[T](path))
 
 proc close*(s: var Spill) = close(s.underlying)
 proc close*(s: var WritableSpill) = close(s.stream)

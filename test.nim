@@ -1,14 +1,17 @@
 import spills
 
-const name = "foo.spill"
 type Foo = object
   a, b: int
   c: float
 
-var x = writableSpill[Foo](name)
+initSpills()
+
+var (name, x) = writableSpill[Foo]()
 for i in 0 .. 1000000:
   x.add(Foo(a: i, b: i + 1, c: i.float))
 x.close()
+
+echo name
 
 var y = spill[Foo](name)
 echo y
