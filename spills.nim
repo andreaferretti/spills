@@ -20,8 +20,13 @@ proc spillDir*(s: string) =
   createDir(s)
   spillsBaseDir = s
 
-proc initSpills*() =
-  createDir(spillsBaseDir)
+proc initSpills*() = createDir(spillsBaseDir)
+
+proc destroySpills*() =
+  for i in countdown(count, 0):
+    let path = spillsBaseDir / ("spill_" & $(i))
+    if fileExists(path):
+      removeFile(path)
 
 proc spill*[T](path: string): Spill[T] =
   let f = memfiles.open(path, mode = fmReadWrite)

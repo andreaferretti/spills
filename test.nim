@@ -17,3 +17,5 @@ var y = spill[Foo](name)
 echo y
 echo y[1234]
 y.close()
+
+destroySpills()
