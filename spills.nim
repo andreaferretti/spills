@@ -7,6 +7,7 @@ type
     underlying: MemFile
   WritableSpill[T] = object
     stream: Stream
+    path: string
 
 var
   spillsBaseDir = "/tmp/spills"
@@ -32,12 +33,13 @@ proc spill*[T](path: string): Spill[T] =
   let f = memfiles.open(path, mode = fmReadWrite)
   return Spill[T](data: cast[ptr[UncheckedArray[T]]](f.mem), underlying: f)
 
-proc writableSpill*[T](path: string): WritableSpill[T] =
-  WritableSpill[T](stream: newFileStream(path, fmWrite))
+proc spill*[T](s: WritableSpill[T]): Spill[T] = spill[T](s.path)
 
-proc writableSpill*[T](): (string, WritableSpill[T]) =
-  let path = genId()
-  return (path, writableSpill[T](path))
+proc writableSpill*[T](path: string): WritableSpill[T] =
+  WritableSpill[T](stream: newFileStream(path, fmWrite), path: path)
+
+proc writableSpill*[T](): WritableSpill[T] =
+  writableSpill[T](genId())
 
 proc close*(s: var Spill) = close(s.underlying)
 proc close*(s: var WritableSpill) = close(s.stream)
