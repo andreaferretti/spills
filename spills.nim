@@ -16,7 +16,7 @@ proc genId(): string =
   count += 1
   return spillsBaseDir / ("spill_" & $(count))
 
-proc spillDir*(s: string) =
+proc initSpills*(s: string) =
   createDir(s)
   spillsBaseDir = s
 
