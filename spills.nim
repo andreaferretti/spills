@@ -75,6 +75,17 @@ proc map*[T, U](s: Spill[T], f: proc(t: T): U, path: string): Spill[U] =
 proc map*[T, U](s: Spill[T], f: proc(t: T): U): Spill[U] =
   map(s, f, genId())
 
+proc filter*[T](s: Spill[T], f: proc(t: T): bool, path: string): Spill[T] =
+  var ws = writableSpill[T](path)
+  for x in s:
+    if f(x):
+      ws.add(x)
+  ws.close()
+  return spill[T](ws)
+
+proc filter*[T](s: Spill[T], f: proc(t: T): bool): Spill[T] =
+  filter(s, f, genId())
+
 proc print*[T](s: Spill[T], maxItems = 30): string =
   var count = 0
   result = "s["

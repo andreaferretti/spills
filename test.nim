@@ -15,11 +15,18 @@ var y = spill(x)
 echo y
 echo y[1234]
 
-var z = y.map(proc(f: Foo): float = f.c)
+var z1 = y.map(proc(f: Foo): float = f.c)
 
-echo z[1234]
+echo z1[1234]
+
+var z2 = y.filter(proc(f: Foo): bool = f.a mod 2 == 0)
+
+echo len(z2)
+
+echo z2[1234]
 
 y.close()
-z.close()
+z1.close()
+z2.close()
 
 destroySpills()
