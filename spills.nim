@@ -65,7 +65,17 @@ iterator pairs*[T](s: Spill[T]): tuple[key: int, val: T] {.inline.} =
   for i in 0 .. < len(s):
     yield (i, s.data[i])
 
-proc print*[T](s: Spill[T], maxItems = 100): string =
+proc map*[T, U](s: Spill[T], f: proc(t: T): U, path: string): Spill[U] =
+  var ws = writableSpill[U](path)
+  for x in s:
+    ws.add(f(x))
+  ws.close()
+  return spill[U](ws)
+
+proc map*[T, U](s: Spill[T], f: proc(t: T): U): Spill[U] =
+  map(s, f, genId())
+
+proc print*[T](s: Spill[T], maxItems = 30): string =
   var count = 0
   result = "s["
   for x in s:
