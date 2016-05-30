@@ -101,4 +101,4 @@ proc print*[T](s: Spill[T], maxItems = 30): string =
 
 proc `$`*[T](s: Spill[T]): string = print(s)
 
-export sequtils.foldl
+export sequtils.foldl, sequtils.foldr
