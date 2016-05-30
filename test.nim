@@ -34,4 +34,10 @@ y.close()
 z1.close()
 z2.close()
 
+var a = writableSpill[Foo]()
+a.close()
+var b = spill(a)
+echo b
+b.close()
+
 destroySpills()

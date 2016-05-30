@@ -1,5 +1,7 @@
 import os, memfiles, streams, sequtils
 
+const magicNumber = 0x1234cafe
+
 type
   UncheckedArray{.unchecked.}[T] = array[1, T]
   Spill*[T] = object
@@ -30,13 +32,17 @@ proc destroySpills*() =
       removeFile(path)
 
 proc spill*[T](path: string): Spill[T] =
-  let f = memfiles.open(path, mode = fmReadWrite)
-  return Spill[T](data: cast[ptr[UncheckedArray[T]]](f.mem), underlying: f)
+  let
+    f = memfiles.open(path, mode = fmReadWrite)
+    p = cast[ptr[UncheckedArray[T]]](cast[int](f.mem) + sizeof(magicNumber))
+  return Spill[T](data: p, underlying: f)
 
 proc spill*[T](s: WritableSpill[T]): Spill[T] = spill[T](s.path)
 
 proc writableSpill*[T](path: string): WritableSpill[T] =
-  WritableSpill[T](stream: newFileStream(path, fmWrite), path: path)
+  var s = newFileStream(path, fmWrite)
+  s.write(magicNumber)
+  WritableSpill[T](stream: s, path: path)
 
 proc writableSpill*[T](): WritableSpill[T] =
   writableSpill[T](genId())
@@ -44,7 +50,7 @@ proc writableSpill*[T](): WritableSpill[T] =
 proc close*(s: var Spill) = close(s.underlying)
 proc close*(s: var WritableSpill) = close(s.stream)
 
-proc len*[T](s: Spill[T]): int = s.underlying.size div sizeof(T)
+proc len*[T](s: Spill[T]): int = (s.underlying.size - sizeof(magicNumber)) div sizeof(T)
 
 proc `[]`*[T](s: Spill[T], i: int): T =
   assert i >= 0 and i < len(s)
