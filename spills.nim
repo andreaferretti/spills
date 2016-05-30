@@ -1,4 +1,4 @@
-import os, memfiles, streams
+import os, memfiles, streams, sequtils
 
 type
   UncheckedArray{.unchecked.}[T] = array[1, T]
@@ -100,3 +100,5 @@ proc print*[T](s: Spill[T], maxItems = 30): string =
   result &= "]"
 
 proc `$`*[T](s: Spill[T]): string = print(s)
+
+export sequtils.foldl

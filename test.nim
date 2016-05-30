@@ -25,6 +25,9 @@ echo len(z2)
 
 echo z2[1234]
 
+let sum = foldl(z1, a + b)
+echo sum
+
 y.close()
 z1.close()
 z2.close()
