@@ -1,14 +1,15 @@
-import spills
+import spills, spills/varchar
 
 type Foo = object
   a, b: int
   c: float
+  d: VarChar[10]
 
 initSpills()
 
 var x = writableSpill[Foo]()
 for i in 0 .. 1000000:
-  x.add(Foo(a: i, b: i + 1, c: i.float))
+  x.add(Foo(a: i, b: i + 1, c: i.float, d: ($i).varchar(10)))
 x.close()
 
 var y = spill(x)
