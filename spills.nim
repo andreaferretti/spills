@@ -71,6 +71,21 @@ iterator pairs*[T](s: Spill[T]): tuple[key: int, val: T] {.inline.} =
   for i in 0 .. < len(s):
     yield (i, s.data[i])
 
+proc toSeq*[T](s: Spill[T]): seq[T] =
+  let L = s.len
+  result = newSeq[T](L)
+  for i in 0 .. < L:
+    result[i] = s.data[i]
+
+proc toSpill*[T](s: seq[T], path: string): Spill[T] =
+  var ws = writableSpill[T](path)
+  for x in s:
+    ws.add(x)
+  ws.close()
+  return spill[T](ws)
+
+proc toSpill*[T](s: seq[T]): Spill[T] = toSpill(s, genId())
+
 proc map*[T, U](s: Spill[T], f: proc(t: T): U, path: string): Spill[U] =
   var ws = writableSpill[U](path)
   for x in s:

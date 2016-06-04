@@ -72,6 +72,9 @@ single items, there are `map`, `filter`, `foldl` and `foldr`. These work as the
 similar operations in `sequtils`, except that `map` and `filter` optionally
 take a path parameter.
 
+There are also functions `toSpill[T](s: seq[T]): Spill[T]` and
+`toSeq[T](s: Spill[T]): seq[T]` to convert back and forth from sequences.
+
 ## Strings
 
 Strings are variable-length, and as such cannot be stored into spills. Since

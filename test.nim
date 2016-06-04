@@ -41,4 +41,17 @@ var b = spill(a)
 echo b
 b.close()
 
+var
+  s = @[
+    Foo(a: 2, b: 5, c: 3.14, d: "Hello".varchar(10)),
+    Foo(a: 3, b: 2, c: 1.0, d: "World".varchar(10))
+  ]
+  t = s.toSpill()
+  u = t.toSeq()
+
+echo t
+echo u
+
+t.close()
+
 destroySpills()
