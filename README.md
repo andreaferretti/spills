@@ -43,3 +43,51 @@ echo z1[1234]
 y.close()
 z.close()
 ```
+
+## Managing resources
+
+Since spills are associated to files, there are two concerns:
+
+* closing streams and other objects to make sure that changes to disk are
+  flushed and resources released
+* removing intermediate temporary files.
+
+Spills are written to a temporary directory by default. To set this directory
+and create it, call `initSpills(dir)`. Just calling `initSpills()` will use a
+default directory of `/tmp/spills`.
+
+Every method that creates a new spill object optionally accepts a path parameter.
+If this parameter is missing, files are created in the temporary directory.
+At the end, you can call `destroySpills()` to remove the files generated in this
+directory. In this way, you can choose which files to persist across sessions,
+and which ones to remove.
+
+Finally, spills (both simple and writable) have a close method that will unmap
+the file from memory (respectively, close the associated stream).
+
+## Sequence operations
+
+Spills admit a few standard sequence operations. Other than reading and writing
+single items, there are `map`, `filter`, `foldl` and `foldr`. These work as the
+similar operations in `sequtils`, except that `map` and `filter` optionally
+take a path parameter.
+
+## Strings
+
+Strings are variable-length, and as such cannot be stored into spills. Since
+they are quite a common type, we provide a `VarChar[N]` type under `spills/varchar`.
+
+`VarChar[N]` is a wrapper over an array of `N` chars and a length field. If you
+know beforehand that all your strings will not be longer than `N`, you can use
+it instead. One can convert back and forth using
+
+```nim
+import spills/varchar
+
+let
+  a = "Hello, world"
+  b = a.varchar(15)
+  c = $b
+
+assert a == c
+```
