@@ -1,0 +1,24 @@
+mode = ScriptMode.Verbose
+
+version       = "0.1.0"
+author        = "Andrea Ferretti"
+description   = "Disk-baked sequences"
+license       = "Apache2"
+skipFiles      = @["test.nim"]
+
+requires "nim >= 0.13.0"
+
+task tests, "run tests":
+  --hints: off
+  --linedir: on
+  --stacktrace: on
+  --linetrace: on
+  --debuginfo
+  --path: "."
+  --run
+  setCommand "c", "test"
+
+task gendoc, "generate documentation":
+  --docSeeSrcUrl: https://github.com/andreaferretti/spills/blob/master
+  --project
+  setCommand "doc2", "spills"
