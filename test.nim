@@ -59,4 +59,24 @@ suite "spills":
 
     check s == u
 
+suite "varchar":
+  test "string conversions":
+    let
+      s = "Hello, world!"
+      v = s.varchar(20)
+      t = $v
+    check s == t
+  test "length operation":
+    let
+      s = "Hello, world!"
+      v = s.varchar(20)
+    check s.len == v.len
+  test "equality operation":
+    let
+      s = "Hello, world!"
+      u = s.varchar(17)
+      v = s.varchar(17)
+    check u == v
+
+
 destroySpills()
