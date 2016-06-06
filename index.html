@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Spills by andreaferretti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Spills</h1>
+      <h2 class="project-tagline">Disk-based sequences</h2>
+      <a href="https://github.com/andreaferretti/spills" class="btn">View on GitHub</a>
+      <a href="https://github.com/andreaferretti/spills/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/andreaferretti/spills/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="spills" class="anchor" href="#spills" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Spills</h1>
+
+<p>Spills are sequences that spill to disk when they do not fit in memory. They
+are simply represented by a memory-mapped file, hence they are to be used with
+type that are flat - that is, they are obtained by combining primitive types,
+objects and arrays, but do not involve seqs, strings or references to heap
+memory. In short, you should be able to compute their size statically.</p>
+
+<p>Spills work in two modes:</p>
+
+<ul>
+<li>writable spills wrap a stream, and one can <code>add</code> to them, which just amounts
+to writing to the stream;</li>
+<li>normal spills are fixed-size. You can read and write their elements, iterate
+over them and so on, but cannot grow.</li>
+</ul>
+
+<p>Usually, one first populates a writable spills, then obtains the corresponding
+spill from that, and works from there.</p>
+
+<p>An example:</p>
+
+<div class="highlight highlight-source-nim"><pre><span class="pl-k">import</span> spills
+
+<span class="pl-k">type</span> Foo = <span class="pl-k">object</span>
+  a, b: <span class="pl-k">int</span>
+  c: <span class="pl-k">float</span>
+
+<span class="pl-c1">initSpills</span>()
+
+<span class="pl-k">var</span> x = <span class="pl-c1">writableSpill</span>[Foo]()
+<span class="pl-k">for</span> i <span class="pl-k">in</span> <span class="pl-c1">0</span> .. <span class="pl-c1">1000000</span>:
+  x.<span class="pl-c1">add</span>(<span class="pl-c1">Foo</span>(a: i, b: i + <span class="pl-c1">1</span>, c: i.<span class="pl-k">float</span>))
+x.<span class="pl-c1">close</span>()
+
+<span class="pl-k">var</span> y = <span class="pl-c1">spill</span>(x)
+<span class="pl-c1">echo</span> y
+<span class="pl-c1">echo</span> y[<span class="pl-c1">1234</span>]
+
+<span class="pl-k">var</span> z = y.<span class="pl-c1">map</span>(<span class="pl-k">proc</span>(f: Foo)<span class="pl-k">:</span> <span class="pl-k">float</span> = f.c)
+
+<span class="pl-c1">echo</span> z1[<span class="pl-c1">1234</span>]
+
+y.<span class="pl-c1">close</span>()
+z.<span class="pl-c1">close</span>()</pre></div>
+
+<h2>
+<a id="managing-resources" class="anchor" href="#managing-resources" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Managing resources</h2>
+
+<p>Since spills are associated to files, there are two concerns:</p>
+
+<ul>
+<li>closing streams and other objects to make sure that changes to disk are
+flushed and resources released</li>
+<li>removing intermediate temporary files.</li>
+</ul>
+
+<p>Spills are written to a temporary directory by default. To set this directory
+and create it, call <code>initSpills(dir)</code>. Just calling <code>initSpills()</code> will use a
+default directory of <code>/tmp/spills</code>.</p>
+
+<p>Every method that creates a new spill object optionally accepts a path parameter.
+If this parameter is missing, files are created in the temporary directory.
+At the end, you can call <code>destroySpills()</code> to remove the files generated in this
+directory. In this way, you can choose which files to persist across sessions,
+and which ones to remove.</p>
+
+<p>Finally, spills (both simple and writable) have a close method that will unmap
+the file from memory (respectively, close the associated stream).</p>
+
+<h2>
+<a id="sequence-operations" class="anchor" href="#sequence-operations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sequence operations</h2>
+
+<p>Spills admit a few standard sequence operations. Other than reading and writing
+single items, there are <code>map</code>, <code>filter</code>, <code>foldl</code> and <code>foldr</code>. These work as the
+similar operations in <code>sequtils</code>, except that <code>map</code> and <code>filter</code> optionally
+take a path parameter.</p>
+
+<p>There are also functions <code>toSpill[T](s: seq[T]): Spill[T]</code> and
+<code>toSeq[T](s: Spill[T]): seq[T]</code> to convert back and forth from sequences.</p>
+
+<h2>
+<a id="strings" class="anchor" href="#strings" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Strings</h2>
+
+<p>Strings are variable-length, and as such cannot be stored into spills. Since
+they are quite a common type, we provide a <code>VarChar[N]</code> type under <code>spills/varchar</code>.</p>
+
+<p><code>VarChar[N]</code> is a wrapper over an array of <code>N</code> chars and a length field. If you
+know beforehand that all your strings will not be longer than <code>N</code>, you can use
+it instead. One can convert back and forth using</p>
+
+<div class="highlight highlight-source-nim"><pre><span class="pl-k">import</span> spills/varchar
+
+<span class="pl-k">let</span>
+  a = <span class="pl-s">"Hello, world"</span>
+  b = a.<span class="pl-c1">varchar</span>(<span class="pl-c1">15</span>)
+  c = $b
+
+<span class="pl-c1">assert</span> a == c</pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/andreaferretti/spills">Spills</a> is maintained by <a href="https://github.com/andreaferretti">andreaferretti</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
