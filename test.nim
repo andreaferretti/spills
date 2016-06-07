@@ -58,6 +58,13 @@ suite "spills":
       u = t.toSeq()
 
     check s == u
+  test "empty spills do not break":
+    var
+      y = spill(x)
+      z = y.filter(proc(f: Foo): bool = f.a < 0)
+    check z.toSeq == newSeq[Foo]()
+    y.close()
+    z.close()
 
 suite "varchar":
   test "string conversions":
