@@ -16,7 +16,10 @@ task tests, "run tests":
   --debuginfo
   --path: "."
   --run
-  setCommand "c", "test"
+  setCommand "c", "test.nim"
+
+task test, "run tests":
+  setCommand "tests"
 
 task gendoc, "generate documentation":
   --docSeeSrcUrl: https://github.com/andreaferretti/spills/blob/master
