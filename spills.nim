@@ -7,6 +7,7 @@ type
   Spill*[T] = object
     data: ptr[UncheckedArray[T]]
     underlying: MemFile
+    offset: int
   WritableSpill[T] = object
     stream: Stream
     path: string
@@ -36,7 +37,7 @@ proc spill*[T](path: string, hasHeader = true): Spill[T] =
     f = memfiles.open(path, mode = fmReadWrite)
     offset = if hasHeader: sizeOf(magicNumber) else: 0
     p = cast[ptr[UncheckedArray[T]]](cast[int](f.mem) + offset)
-  return Spill[T](data: p, underlying: f)
+  return Spill[T](data: p, underlying: f, offset: offset)
 
 proc spill*[T](s: WritableSpill[T]): Spill[T] = spill[T](s.path)
 
@@ -51,7 +52,7 @@ proc writableSpill*[T](): WritableSpill[T] =
 proc close*(s: var Spill) = close(s.underlying)
 proc close*(s: var WritableSpill) = close(s.stream)
 
-proc len*[T](s: Spill[T]): int = (s.underlying.size - sizeof(magicNumber)) div sizeof(T)
+proc len*[T](s: Spill[T]): int = (s.underlying.size - s.offset) div sizeof(T)
 
 proc `[]`*[T](s: Spill[T], i: int): T =
   assert i >= 0 and i < len(s)
