@@ -65,6 +65,14 @@ suite "spills":
     check z.toSeq == newSeq[Foo]()
     y.close()
     z.close()
+  test "spills without headers":
+    var
+      y = spill[char]("spills.nim", hasHeader = false)
+      s = newStringOfCap(9)
+    for i in 0 .. 8:
+      s.add(y[i])
+    check s == "import os"
+    y.close()
 
 suite "varchar":
   test "string conversions":

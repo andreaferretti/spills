@@ -31,10 +31,11 @@ proc destroySpills*() =
     if fileExists(path):
       removeFile(path)
 
-proc spill*[T](path: string): Spill[T] =
+proc spill*[T](path: string, hasHeader = true): Spill[T] =
   let
     f = memfiles.open(path, mode = fmReadWrite)
-    p = cast[ptr[UncheckedArray[T]]](cast[int](f.mem) + sizeof(magicNumber))
+    offset = if hasHeader: sizeOf(magicNumber) else: 0
+    p = cast[ptr[UncheckedArray[T]]](cast[int](f.mem) + offset)
   return Spill[T](data: p, underlying: f)
 
 proc spill*[T](s: WritableSpill[T]): Spill[T] = spill[T](s.path)
