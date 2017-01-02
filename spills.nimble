@@ -1,6 +1,6 @@
 mode = ScriptMode.Verbose
 
-version       = "0.1.0"
+version       = "0.1.1"
 author        = "Andrea Ferretti"
 description   = "Disk-baked sequences"
 license       = "Apache2"
