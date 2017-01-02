@@ -44,6 +44,17 @@ y.close()
 z.close()
 ```
 
+To avoid breaking with empty spills, the library always create spills with a
+magic number header, so that even an empty spill does not correspond to an
+empty file. To read files without this header (perhaps written by some external
+tool) one can do something like
+
+```nim
+var y = spill[char]("some file", hasHeader = false)
+...
+y.close()
+```
+
 ## Managing resources
 
 Since spills are associated to files, there are two concerns:
