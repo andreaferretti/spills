@@ -16,6 +16,12 @@ suite "spills":
     var y = spill(x)
     check y[10] == Foo(a: 10, b: 11, c: 10.0)
     y.close()
+  test "slicing spills":
+    var y = spill(x)
+    let s = y[3 .. 10]
+    check s[2] == y[5]
+    check s.len == 8
+    y.close()
   test "map operation":
     var
       y = spill(x)

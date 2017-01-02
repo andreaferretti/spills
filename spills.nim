@@ -58,8 +58,14 @@ proc `[]`*[T](s: Spill[T], i: int): T =
   assert i >= 0 and i < len(s)
   return s.data[i]
 
+proc `[]`*[T](s: Spill[T], p: Slice[int]): seq[T] =
+  assert p.a >= 0 and p.b < len(s)
+  result = newSeqOfCap[T](p.b - p.a + 1)
+  for i in p:
+    result.add(s[i])
+
 proc `[]=`*[T](s: var Spill[T], i: int, val: T) =
-  assert i >= 0 and i < len(tea)
+  assert i >= 0 and i < len(s)
   s.data[i] = val
 
 proc add*[T](s: var WritableSpill[T], val: T) =
