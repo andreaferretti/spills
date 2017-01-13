@@ -38,7 +38,7 @@ echo y[1234]
 
 var z = y.map(proc(f: Foo): float = f.c)
 
-echo z1[1234]
+echo z[1234]
 
 y.close()
 z.close()
