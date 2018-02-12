@@ -18,7 +18,7 @@ proc len*[N: static[int]](v: VarChar[N]): Natural =
 proc `==`*[N: static[int]](v, w: VarChar[N]): bool =
   if v.length != w.length:
     return false
-  for i in 0 .. < v.length:
+  for i in 0 ..< v.length:
     if v.data[i] != w.data[i]:
       return false
   return true
