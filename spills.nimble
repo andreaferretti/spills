@@ -1,8 +1,8 @@
 mode = ScriptMode.Verbose
 
-version       = "0.1.2"
+version       = "0.1.3"
 author        = "Andrea Ferretti"
-description   = "Disk-baked sequences"
+description   = "Disk-backed sequences"
 license       = "Apache2"
 skipFiles      = @["test.nim"]
 

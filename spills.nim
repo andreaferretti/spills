@@ -3,7 +3,6 @@ import os, memfiles, streams, sequtils
 const magicNumber = 0x1234cafe
 
 type
-  UncheckedArray{.unchecked.}[T] = array[1, T]
   Spill*[T] = object
     data: ptr[UncheckedArray[T]]
     underlying: MemFile
